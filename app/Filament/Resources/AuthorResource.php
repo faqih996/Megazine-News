@@ -24,6 +24,17 @@ class AuthorResource extends Resource
         return $form
             ->schema([
                 //
+                Forms\Components\TextInput::make('name')
+                ->required()
+                ->maxLength(255),
+
+                Forms\Components\TextInput::make('occupation')
+                ->required()
+                ->maxLength(255),
+
+                Forms\Components\FileUpload::make('avatar')
+                ->image()
+                ->required(),
             ]);
     }
 
@@ -31,7 +42,11 @@ class AuthorResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name')
+                ->searchable(),
+                Tables\Columns\ImageColumn::make('avatar')
+                ->width(40)
+                ->height(40),
             ])
             ->filters([
                 //
