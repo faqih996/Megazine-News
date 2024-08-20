@@ -94,4 +94,33 @@ class FrontController extends Controller
 
         return view('front.category', compact('category', 'categories', 'bannerAds'));
     }
+
+    public function author(Author $author)
+    {
+        $categories = Category::all();
+
+        $bannerAds = BannerAdvertisement::where('is_active', 'active')
+        ->where('type', 'banner')
+        ->inRandomOrder()
+        ->first();
+
+        return view('front.author', compact('author', 'categories', 'bannerAds'));
+    }
+
+    public function search(Request $request)
+    {
+        $request->validate([
+            'keyword' => ['required', 'string', 'max:255']
+        ]);
+
+        $categories = Category::all();
+
+        $keyword = $request->keyword;
+
+    // Search for articles with the given keyword in title, content, and author's name.
+        $articles = ArticleNews::with('category', 'author')
+        ->where('name', 'like', '%'. $keyword. '%')->paginate(6);
+
+        return view('front.search', compact('articles', 'keyword', 'categories'));
+    }
 }
