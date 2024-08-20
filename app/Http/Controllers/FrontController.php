@@ -99,6 +99,7 @@ class FrontController extends Controller
     {
         $categories = Category::all();
 
+
         $bannerAds = BannerAdvertisement::where('is_active', 'active')
         ->where('type', 'banner')
         ->inRandomOrder()
@@ -117,10 +118,51 @@ class FrontController extends Controller
 
         $keyword = $request->keyword;
 
-    // Search for articles with the given keyword in title, content, and author's name.
+        // Search for articles with the given keyword in title, content, and author's name.
         $articles = ArticleNews::with('category', 'author')
         ->where('name', 'like', '%'. $keyword. '%')->paginate(6);
 
         return view('front.search', compact('articles', 'keyword', 'categories'));
+    }
+
+    public function details(ArticleNews $articleNews)
+    {
+        $categories = Category::all();
+
+        $articles = ArticleNews::with(['Category'])
+        ->where('is_featured', 'not_featured')
+        ->where('id', '!=', $articleNews->id)
+        ->latest()
+        ->take(3)
+        ->get();
+
+        $bannerAds = BannerAdvertisement::where('is_active', 'active')
+        ->where('type', 'banner')
+        ->inRandomOrder()
+        ->first();
+
+        // Get square ads with a random order.
+        $square_ads = BannerAdvertisement::where('type', 'square')
+        ->where('is_active', 'active')
+        ->inRandomOrder()
+        ->take(2)
+        ->get();
+
+        // If there are less than 2 square ads, duplicate the first one.
+        if($square_ads->count() < 2) {
+            $square_ads_1 = $square_ads->first();
+            // $square_ads_2 = $square_ads->first();
+            $square_ads_2 = null;
+        }else{
+            $square_ads_1 = $square_ads->get(0);
+            $square_ads_2 = $square_ads->get(1);
+        }
+
+        // Get related articles by the same author excluding the current article.
+        $author_news = ArticleNews::where('author_id', $articleNews->author_id)
+        ->where('id', '!=', $articleNews->id)
+        ->inRandomOrder()->get();
+
+        return view('front.details', compact('articleNews', 'categories', 'articles', 'bannerAds', 'square_ads_1', 'square_ads_2', 'author_news'));
     }
 }
